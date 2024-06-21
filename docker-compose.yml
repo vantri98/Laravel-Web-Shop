@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/var/www/html
+    networks:
+      - app-network
+
+  web:
+    image: nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306" # Expose port for host access
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
